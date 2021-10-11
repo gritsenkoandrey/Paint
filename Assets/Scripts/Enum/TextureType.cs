@@ -1,6 +1,6 @@
 ﻿namespace Enum
 {
-    public enum TexturePaintType : byte
+    public enum TextureType : byte
     {
         RandomValue      = 0,
         GradientValue    = 1,

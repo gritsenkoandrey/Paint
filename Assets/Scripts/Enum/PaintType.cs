@@ -1,6 +1,6 @@
 ﻿namespace Enum
 {
-    public enum PaintingType : byte
+    public enum PaintType : byte
     {
         Quad   = 0,
         Circle = 1,
