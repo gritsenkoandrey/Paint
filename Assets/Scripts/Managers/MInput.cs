@@ -1,9 +1,10 @@
-﻿using UniRx;
+﻿using Singleton;
+using UniRx;
 using UnityEngine;
 
 namespace Managers
 {
-    public sealed class InputManager : MonoBehaviour
+    public sealed class MInput : Singleton<MInput>
     {
         public readonly BoolReactiveProperty IsEnable = new BoolReactiveProperty();
         

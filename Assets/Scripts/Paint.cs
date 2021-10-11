@@ -7,7 +7,9 @@ using UnityEngine;
 [SuppressMessage("ReSharper", "SuggestVarOrType_BuiltInTypes")]
 public sealed class Paint : MonoBehaviour
 {
-    [SerializeField] private InputManager _inputManager;
+    private MInput _input;
+    private MGame _game;
+    
     [SerializeField] private PaintingType _paintingType;
 
     [SerializeField] private Texture2D _texture;
@@ -19,20 +21,31 @@ public sealed class Paint : MonoBehaviour
     [SerializeField] private Camera _camera;
     [SerializeField] private Collider _collider;
     [SerializeField] private Color _color;
-    [SerializeField] private int _brushSize = 1;
 
+    private readonly ReactiveCommand<Vector3> OnDraw = new ReactiveCommand<Vector3>();
+
+    private int _brushSize = 10;
     private int _oldRayX;
     private int _oldRayY;
     
     private void Awake()
     {
-        _inputManager.OnInputStart
-            .Subscribe(point =>
-            {
-            })
+        _input = MInput.Instance;
+        _game = MGame.Instance;
+        
+        _input.OnInputStart
+            .Subscribe(point => OnDraw.Execute(point))
             .AddTo(this);
 
-        _inputManager.OnInputHold
+        _input.OnInputHold
+            .Subscribe(point => OnDraw.Execute(point))
+            .AddTo(this);
+
+        _input.OnInputEnd
+            .Subscribe(point => { })
+            .AddTo(this);
+
+        OnDraw
             .Subscribe(point =>
             {
                 Ray ray = _camera.ScreenPointToRay(point);
@@ -63,10 +76,12 @@ public sealed class Paint : MonoBehaviour
             })
             .AddTo(this);
 
-        _inputManager.OnInputEnd
-            .Subscribe(point =>
-            {
-            })
+        _game.OnBrushColor
+            .Subscribe(color => _color = new Color(color.r, color.g, color.b, _color.a))
+            .AddTo(this);
+
+        _game.OnBrushAlpha
+            .Subscribe(value => _color = new Color(_color.r, _color.g, _color.b, Remap(value, 0f, 255f, 0f, 1f)))
             .AddTo(this);
 
         Observable
@@ -76,13 +91,14 @@ public sealed class Paint : MonoBehaviour
                 _brushSize += (int)Input.mouseScrollDelta.y;
 
                 if (_brushSize < 1) _brushSize = 1;
+                if (_game.OnBrushSize.Value != _brushSize) _game.OnBrushSize.Value = _brushSize;
             })
             .AddTo(this);
     }
 
     private void Start()
     {
-        _inputManager.IsEnable.Value = true;
+        _input.IsEnable.Value = true;
     }
 
     private void OnValidate()
@@ -140,5 +156,10 @@ public sealed class Paint : MonoBehaviour
                 }
             }
         }
+    }
+    
+    private static float Remap(float val, float from1, float to1, float from2, float to2)
+    {
+        return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
 }

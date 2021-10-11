@@ -7,6 +7,7 @@ using Random = UnityEngine.Random;
 public sealed class Texture : MonoBehaviour
 {
     [SerializeField] private TexturePaintType _paintType;
+    [SerializeField] private Material _material;
     
     [SerializeField] private Texture2D _texture;
     [Range(2, 512), SerializeField] private int _resolution = 128;
@@ -17,13 +18,19 @@ public sealed class Texture : MonoBehaviour
     [SerializeField] private Vector2 _offset;
     [SerializeField] private Gradient _gradient;
 
+    private void Start()
+    {
+        _texture = new Texture2D(_resolution, _resolution);
+        _material.mainTexture = _texture;
+    }
+
     private void OnValidate()
     {
-        if (!_texture)
-        {
-            _texture = new Texture2D(_resolution, _resolution);
-            GetComponent<Renderer>().material.mainTexture = _texture;
-        }
+        // if (!_texture)
+        // {
+        //     _texture = new Texture2D(_resolution, _resolution);
+        //     _material.mainTexture = _texture;
+        // }
 
         if (_texture.width != _resolution)
         {
